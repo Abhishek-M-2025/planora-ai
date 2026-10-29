@@ -1,4 +1,4 @@
-# Planora AI — Intelligent Event Planning Studio
+# 📅 Planora AI — Intelligent Event Planning Studio
 
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -27,7 +27,7 @@ Planora AI avoids generic AI templates and stark monochrome palettes in favor of
 
 ### 1. Dynamic Plan Synthesis via Gemini API
 - Users configure their event parameters: title, category (wedding, birthday, community, corporate, gala), target date, venue city, guest count, target budget, currency, styling preferences, and priority allocation bias.
-- Next.js server-side Route Handler (`/api/generate-plan`) calls **Gemini 1.5 Flash** with structured prompts, returning an executive brief, art-directed color palette, decor directives, budget breakdown, chronological timeline, and vendor recommendations.
+- Next.js server-side Route Handler (`/api/generate-plan`) calls **Gemini 3.8 Flash** with structured prompts, returning an executive brief, art-directed color palette, decor directives, budget breakdown, chronological timeline, and vendor recommendations.
 - All AI responses are validated strictly using **Zod** (`GeminiPlanOutputSchema`).
 
 ### 2. Live Budget Calculations & Expense Tracking
