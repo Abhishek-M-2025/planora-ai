@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Sophisticated warm-neutral foundation */
+  --background: 40 20% 97%; /* #FAF9F6 Warm Ivory */
+  --foreground: 155 45% 12%; /* #10291e Deep Forest Charcoal */
+
+  --card: 0 0% 100%;
+  --card-foreground: 155 45% 12%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 155 45% 12%;
+
+  /* Deep Forest Green Primary */
+  --primary: 156 55% 18%; /* #144832 */
+  --primary-foreground: 40 20% 98%;
+
+  /* Warm Sand Secondary */
+  --secondary: 40 18% 92%; /* #ECE8DF */
+  --secondary-foreground: 155 45% 15%;
+
+  /* Warm Muted Neutral */
+  --muted: 40 15% 94%;
+  --muted-foreground: 30 10% 40%;
+
+  /* Terracotta Accent */
+  --accent: 14 55% 53%; /* #C86446 */
+  --accent-foreground: 0 0% 100%;
+
+  /* Champagne / Warm Yellow Highlights */
+  --highlight: 38 65% 55%; /* #DCA53D */
+  --highlight-foreground: 38 75% 15%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 40 15% 88%;
+  --input: 40 15% 88%;
+  --ring: 156 55% 18%;
+
+  --radius: 0.625rem;
+}
+
+body {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessible focus ring for keyboard navigation */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(40 12% 75%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(40 15% 60%);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
