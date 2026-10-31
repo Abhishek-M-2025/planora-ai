@@ -206,3 +206,7 @@ npm run test:watch
 - **Timeline Utilities**: Milestone sequencing, phase ordering, and countdown days calculations.
 - **Client Storage Layer**: Tests persistence, retrieval, functional updaters, and deletions.
 - **Accessibility (WCAG 2.2 AA)**: Validates semantic button behaviors, ARIA progressbar states, alert roles, and focus traps/Escape key handling in modals.
+
+## Built with ❤️ for Prompt Wars Virtual Challenge 5
+
+## Author: Abhishek
