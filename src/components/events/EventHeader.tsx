@@ -1,13 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { EventPlan } from "@/lib/types";
 import { getDaysRemaining } from "@/lib/timeline-utils";
 import { formatCurrency } from "@/lib/budget-calc";
 import { Badge } from "@/ui/Badge";
-import { Button } from "@/ui/Button";
 import {
   Calendar,
   MapPin,
@@ -18,7 +17,6 @@ import {
   Briefcase,
   Sparkles,
   ArrowLeft,
-  Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +26,7 @@ interface EventHeaderProps {
 
 export function EventHeader({ event }: EventHeaderProps) {
   const pathname = usePathname();
-  const daysInfo = getDaysRemaining(event.date);
+  const daysInfo = useMemo(() => getDaysRemaining(event.date), [event.date]);
 
   const tabs = [
     { label: "Overview", href: `/events/${event.id}`, icon: PieChart },

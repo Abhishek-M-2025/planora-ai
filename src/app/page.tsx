@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { getAllEvents, deleteEvent, loadSampleCelebration } from "@/lib/storage";
 import { EventPlan } from "@/lib/types";
 import { formatCurrency } from "@/lib/budget-calc";
 import { EventCard } from "@/components/events/EventCard";
 import { Button } from "@/ui/Button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/ui/Card";
+import { Card } from "@/ui/Card";
 import {
   Sparkles,
   PlusCircle,
@@ -15,8 +15,6 @@ import {
   DollarSign,
   CheckCircle2,
   Users,
-  ArrowRight,
-  ShieldCheck,
   Compass,
 } from "lucide-react";
 
@@ -25,11 +23,11 @@ export default function DashboardPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [modelDisplayName, setModelDisplayName] = useState<string>("Gemini 3.8 Flash");
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     const list = getAllEvents();
     setEvents(list);
     setIsLoaded(true);
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -41,7 +39,7 @@ export default function DashboardPage() {
       })
       .catch(() => {});
     return () => window.removeEventListener("planora:events-updated", loadData);
-  }, []);
+  }, [loadData]);
 
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
@@ -55,11 +53,21 @@ export default function DashboardPage() {
     loadData();
   };
 
-  const totalManagedBudget = events.reduce((sum, e) => sum + e.totalBudget, 0);
-  const totalGuests = events.reduce((sum, e) => sum + e.guestCount, 0);
-  const totalCompletedMilestones = events.reduce(
-    (sum, e) => sum + e.timeline.filter((m) => m.status === "completed").length,
-    0
+  const totalManagedBudget = useMemo(
+    () => events.reduce((sum, e) => sum + e.totalBudget, 0),
+    [events]
+  );
+  const totalGuests = useMemo(
+    () => events.reduce((sum, e) => sum + e.guestCount, 0),
+    [events]
+  );
+  const totalCompletedMilestones = useMemo(
+    () =>
+      events.reduce(
+        (sum, e) => sum + e.timeline.filter((m) => m.status === "completed").length,
+        0
+      ),
+    [events]
   );
 
   return (

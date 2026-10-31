@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { getAllEvents, deleteEvent, loadSampleCelebration } from "@/lib/storage";
-import { EventPlan, EventType } from "@/lib/types";
+import { EventPlan } from "@/lib/types";
 import { EventCard } from "@/components/events/EventCard";
 import { Button } from "@/ui/Button";
 import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
 import { Card } from "@/ui/Card";
-import { PlusCircle, Search, CalendarDays, Filter } from "lucide-react";
+import { PlusCircle, Search, CalendarDays } from "lucide-react";
 
 export default function EventsListingPage() {
   const [events, setEvents] = useState<EventPlan[]>([]);
@@ -17,15 +17,15 @@ export default function EventsListingPage() {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date_asc");
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setEvents(getAllEvents());
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
     window.addEventListener("planora:events-updated", loadData);
     return () => window.removeEventListener("planora:events-updated", loadData);
-  }, []);
+  }, [loadData]);
 
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to permanently delete this event?")) {
@@ -34,26 +34,28 @@ export default function EventsListingPage() {
     }
   };
 
-  const filteredEvents = events
-    .filter((event) => {
-      const matchesSearch =
-        event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.location.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = selectedType === "all" || event.type === selectedType;
-      return matchesSearch && matchesType;
-    })
-    .sort((a, b) => {
-      if (sortBy === "date_asc") {
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-      } else if (sortBy === "date_desc") {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      } else if (sortBy === "budget_desc") {
-        return b.totalBudget - a.totalBudget;
-      } else if (sortBy === "budget_asc") {
-        return a.totalBudget - b.totalBudget;
-      }
-      return 0;
-    });
+  const filteredEvents = useMemo(() => {
+    return events
+      .filter((event) => {
+        const matchesSearch =
+          event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          event.location.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesType = selectedType === "all" || event.type === selectedType;
+        return matchesSearch && matchesType;
+      })
+      .sort((a, b) => {
+        if (sortBy === "date_asc") {
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        } else if (sortBy === "date_desc") {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        } else if (sortBy === "budget_desc") {
+          return b.totalBudget - a.totalBudget;
+        } else if (sortBy === "budget_asc") {
+          return a.totalBudget - b.totalBudget;
+        }
+        return 0;
+      });
+  }, [events, searchQuery, selectedType, sortBy]);
 
   const typeOptions = [
     { value: "all", label: "All Categories" },

@@ -1,8 +1,23 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { EventCreateInput, GeminiPlanOutput, GeminiPlanOutputSchema } from "./schemas";
 
-export const GEMINI_MODEL_ID = "gemini-3.8-flash";
-export const GEMINI_MODEL_DISPLAY_NAME = "Gemini 3.8 Flash";
+export const GEMINI_MODEL_ID = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+export const GEMINI_MODEL_DISPLAY_NAME = process.env.GEMINI_MODEL_NAME || "Gemini 1.5 Flash";
+
+export interface EventChatContext {
+  id: string;
+  name: string;
+  type: string;
+  date: string;
+  location: string;
+  guestCount: number;
+  totalBudget: number;
+  currency: string;
+  preferences?: Record<string, unknown>;
+  totalAllocated?: number;
+  totalActual?: number;
+  budgetRemaining?: number;
+}
 
 /**
  * Resolves the Gemini API Key strictly on the server:
@@ -30,7 +45,6 @@ export function isGeminiKeyConfigured(): boolean {
  */
 function cleanJsonString(raw: string): string {
   let cleaned = raw.trim();
-  // Remove markdown code fences if present
   if (cleaned.startsWith("```json")) {
     cleaned = cleaned.replace(/^```json\s*/, "").replace(/```$/, "").trim();
   } else if (cleaned.startsWith("```")) {
@@ -53,10 +67,7 @@ export async function generateEventPlanWithGemini(
       temperature: 0.35,
       responseMimeType: "application/json",
       maxOutputTokens: 2500,
-      thinkingConfig: {
-        thinkingBudget: 0,
-      },
-    } as any,
+    },
   });
 
   const prompt = `You are Planora AI, an elite event planner and budget strategist. Create a comprehensive, realistic event plan based on the inputs below. Return valid JSON matching the exact schema.
@@ -73,6 +84,12 @@ Event Parameters:
 - Dietary Notes: ${input.preferences.dietaryNotes || "Standard diverse accommodations"}
 - Special Requests: ${input.preferences.specialRequests || "None"}
 - Priority Focus: ${input.preferences.priorityFocus}
+
+Planning Strategy Directives:
+1. Budget Allocation: Ensure total allocations sum to 90-100% of ${input.totalBudget}. Emphasize the chosen priority focus (${input.preferences.priorityFocus}) with dedicated investment and detail.
+2. Timeline Sequencing: Provide chronologically sound milestones leading up to and including ${input.date}, specifying pre_event planning and day_of run-of-show details.
+3. Vendors: Recommend realistic vendor archetypes matching typical pricing and standards in ${input.location}.
+4. Recommendations: Provide high-impact strategic recommendations covering cost_saving, guest_experience, risk_mitigation, and timing.
 
 Required JSON Schema:
 {
@@ -122,22 +139,22 @@ Required JSON Schema:
 }
 
 Constraints:
-1. The sum of allocatedAmount values in budgetBreakdown must equal 90-100% of ${input.totalBudget}.
-2. Provide 6-8 budget breakdown items covering primary categories.
-3. Provide 6-8 chronological timeline milestones (covering pre_event and day_of key moments).
-4. Provide 4-6 vendor checklist items with estimated pricing.
-5. Provide 3-4 high-impact strategic recommendations.
-6. Return ONLY valid JSON matching this schema. No markdown backticks.`;
+1. Provide 6-8 budget breakdown items covering primary categories.
+2. Provide 6-8 chronological timeline milestones covering pre_event and day_of key moments.
+3. Provide 4-6 vendor checklist items with estimated pricing.
+4. Provide 3-4 high-impact strategic recommendations.
+5. Return ONLY valid JSON matching this schema. No markdown backticks.`;
 
   const result = await model.generateContent(prompt);
   const responseText = result.response.text();
   const cleaned = cleanJsonString(responseText);
 
-  let parsedJson: any;
+  let parsedJson: unknown;
   try {
     parsedJson = JSON.parse(cleaned);
-  } catch (err: any) {
-    throw new Error(`Failed to parse AI response as JSON: ${err.message}. Raw output snippet: ${cleaned.slice(0, 200)}`);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to parse AI response as JSON: ${errorMsg}. Raw output snippet: ${cleaned.slice(0, 200)}`);
   }
 
   const validation = GeminiPlanOutputSchema.safeParse(parsedJson);
@@ -156,20 +173,17 @@ Constraints:
  */
 export async function sendAssistantChatMessage(
   message: string,
-  eventContext: any,
+  eventContext: EventChatContext,
   chatHistory: { sender: string; content: string }[],
   apiKey: string
-): Promise<{ reply: string; suggestedAction?: any }> {
+): Promise<{ reply: string }> {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL_ID,
     generationConfig: {
       temperature: 0.4,
       maxOutputTokens: 1000,
-      thinkingConfig: {
-        thinkingBudget: 0,
-      },
-    } as any,
+    },
   });
 
   const prompt = `You are the Planora AI Event Strategist assistant. Help the user refine their event plan in real-time.

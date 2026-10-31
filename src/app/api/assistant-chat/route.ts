@@ -39,12 +39,13 @@ export async function POST(req: Request) {
       success: true,
       data: response,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Assistant chat error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to process message with AI assistant.";
     return NextResponse.json(
       {
         error: "ASSISTANT_ERROR",
-        message: error?.message || "Failed to process message with AI assistant.",
+        message: errorMessage,
       },
       { status: 500 }
     );

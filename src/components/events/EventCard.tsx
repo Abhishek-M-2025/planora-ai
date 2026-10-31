@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { EventPlan } from "@/lib/types";
 import { calculateBudgetSummary, formatCurrency } from "@/lib/budget-calc";
@@ -12,7 +12,6 @@ import {
   Calendar,
   MapPin,
   Users,
-  DollarSign,
   ArrowRight,
   Trash2,
   Clock,
@@ -25,9 +24,15 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onDelete }: EventCardProps) {
-  const summary = calculateBudgetSummary(event.totalBudget, event.budgetItems);
-  const daysInfo = getDaysRemaining(event.date);
-  const completedMilestones = event.timeline.filter((m) => m.status === "completed").length;
+  const summary = useMemo(
+    () => calculateBudgetSummary(event.totalBudget, event.budgetItems),
+    [event.totalBudget, event.budgetItems]
+  );
+  const daysInfo = useMemo(() => getDaysRemaining(event.date), [event.date]);
+  const completedMilestones = useMemo(
+    () => event.timeline.filter((m) => m.status === "completed").length,
+    [event.timeline]
+  );
 
   return (
     <Card className="flex flex-col justify-between overflow-hidden group hover:border-forest-700/60 transition-all">

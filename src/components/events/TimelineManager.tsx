@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { EventPlan, TimelineMilestone, TimelinePhase, MilestoneStatus } from "@/lib/types";
 import {
   sortMilestones,
@@ -8,7 +8,7 @@ import {
   formatMilestoneDate,
 } from "@/lib/timeline-utils";
 import { updateEvent } from "@/lib/storage";
-import { Card, CardHeader, CardTitle, CardContent } from "@/ui/Card";
+import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
 import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
@@ -24,7 +24,6 @@ import {
   User,
   Edit2,
   Trash2,
-  Filter,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -47,12 +46,21 @@ export function TimelineManager({ event, onEventUpdated }: TimelineManagerProps)
   const [formRole, setFormRole] = useState("Host");
   const [formDescription, setFormDescription] = useState("");
 
-  const sorted = sortMilestones(event.timeline);
-  const filtered = sorted.filter((m) => (activePhase === "all" ? true : m.phase === activePhase));
+  const sorted = useMemo(() => sortMilestones(event.timeline), [event.timeline]);
+  const filtered = useMemo(
+    () => sorted.filter((m) => (activePhase === "all" ? true : m.phase === activePhase)),
+    [sorted, activePhase]
+  );
 
-  const completedCount = event.timeline.filter((m) => m.status === "completed").length;
-  const progressPercent =
-    event.timeline.length > 0 ? Math.round((completedCount / event.timeline.length) * 100) : 0;
+  const completedCount = useMemo(
+    () => event.timeline.filter((m) => m.status === "completed").length,
+    [event.timeline]
+  );
+  const progressPercent = useMemo(
+    () =>
+      event.timeline.length > 0 ? Math.round((completedCount / event.timeline.length) * 100) : 0,
+    [completedCount, event.timeline.length]
+  );
 
   const openAddModal = () => {
     setEditingMilestone(null);

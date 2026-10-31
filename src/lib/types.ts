@@ -86,7 +86,7 @@ export interface ChatMessage {
   timestamp: string;
   suggestedAction?: {
     type: "add_budget_item" | "add_milestone" | "add_vendor" | "custom";
-    payload?: any;
+    payload?: Record<string, unknown>;
     label?: string;
   };
 }

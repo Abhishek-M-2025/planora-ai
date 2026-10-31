@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useId } from "react";
-import { EventPlan, BudgetCategory, TimelinePhase } from "@/lib/types";
+import React, { useState, useMemo } from "react";
+import { EventPlan, BudgetCategory } from "@/lib/types";
 import { calculateBudgetSummary, formatCurrency, BUDGET_CATEGORIES } from "@/lib/budget-calc";
 import { Card, CardHeader, CardTitle, CardContent } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
@@ -12,10 +12,6 @@ import {
   Clock,
   Sparkles,
   Info,
-  CheckCircle2,
-  Hourglass,
-  Calendar,
-  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,10 +36,15 @@ const CATEGORY_COLORS: Record<BudgetCategory, string> = {
 export function EventAnalyticsCharts({ event }: EventAnalyticsChartsProps) {
   const [hoveredCategory, setHoveredCategory] = useState<BudgetCategory | null>(null);
   const [showTableSummary, setShowTableSummary] = useState(false);
-  const chartId = useId();
 
-  const summary = calculateBudgetSummary(event.totalBudget, event.budgetItems);
-  const activeCategories = summary.categoryBreakdown.filter((c) => c.allocated > 0);
+  const summary = useMemo(
+    () => calculateBudgetSummary(event.totalBudget, event.budgetItems),
+    [event.totalBudget, event.budgetItems]
+  );
+  const activeCategories = useMemo(
+    () => summary.categoryBreakdown.filter((c) => c.allocated > 0),
+    [summary.categoryBreakdown]
+  );
 
   // Total allocated from active categories
   const totalAllocated = summary.totalAllocated;
@@ -55,53 +56,58 @@ export function EventAnalyticsCharts({ event }: EventAnalyticsChartsProps) {
   const cy = 110;
 
   // Build SVG arc paths
-  let cumulativeAngle = 0;
-  const donutSlices = activeCategories.map((cat) => {
-    const fraction = totalAllocated > 0 ? cat.allocated / totalAllocated : 0;
-    const angle = fraction * 360;
-    const startAngle = cumulativeAngle;
-    const endAngle = cumulativeAngle + angle;
-    cumulativeAngle = endAngle;
+  const donutSlices = useMemo(() => {
+    let cumulativeAngle = 0;
+    return activeCategories.map((cat) => {
+      const fraction = totalAllocated > 0 ? cat.allocated / totalAllocated : 0;
+      const angle = fraction * 360;
+      const startAngle = cumulativeAngle;
+      const endAngle = cumulativeAngle + angle;
+      cumulativeAngle = endAngle;
 
-    // Convert angles (degrees) to radians, with 0deg at the top (-90deg)
-    const startRad = ((startAngle - 90) * Math.PI) / 180;
-    const endRad = ((endAngle - 90) * Math.PI) / 180;
+      // Convert angles (degrees) to radians, with 0deg at the top (-90deg)
+      const startRad = ((startAngle - 90) * Math.PI) / 180;
+      const endRad = ((endAngle - 90) * Math.PI) / 180;
 
-    const x1 = cx + radius * Math.cos(startRad);
-    const y1 = cy + radius * Math.sin(startRad);
-    const x2 = cx + radius * Math.cos(endRad);
-    const y2 = cy + radius * Math.sin(endRad);
+      const x1 = cx + radius * Math.cos(startRad);
+      const y1 = cy + radius * Math.sin(startRad);
+      const x2 = cx + radius * Math.cos(endRad);
+      const y2 = cy + radius * Math.sin(endRad);
 
-    const x3 = cx + innerRadius * Math.cos(endRad);
-    const y3 = cy + innerRadius * Math.sin(endRad);
-    const x4 = cx + innerRadius * Math.cos(startRad);
-    const y4 = cy + innerRadius * Math.sin(startRad);
+      const x3 = cx + innerRadius * Math.cos(endRad);
+      const y3 = cy + innerRadius * Math.sin(endRad);
+      const x4 = cx + innerRadius * Math.cos(startRad);
+      const y4 = cy + innerRadius * Math.sin(startRad);
 
-    const largeArc = angle > 180 ? 1 : 0;
+      const largeArc = angle > 180 ? 1 : 0;
 
-    // Path command for donut slice
-    const pathData =
-      angle >= 359.99
-        ? `M ${cx} ${cy - radius} A ${radius} ${radius} 0 1 1 ${cx - 0.01} ${cy - radius} L ${cx - 0.01} ${cy - innerRadius} A ${innerRadius} ${innerRadius} 0 1 0 ${cx} ${cy - innerRadius} Z`
-        : `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+      // Path command for donut slice
+      const pathData =
+        angle >= 359.99
+          ? `M ${cx} ${cy - radius} A ${radius} ${radius} 0 1 1 ${cx - 0.01} ${cy - radius} L ${cx - 0.01} ${cy - innerRadius} A ${innerRadius} ${innerRadius} 0 1 0 ${cx} ${cy - innerRadius} Z`
+          : `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`;
 
-    const categoryDef = BUDGET_CATEGORIES.find((b) => b.id === cat.category);
-    const label = categoryDef?.label || cat.category;
-    const color = CATEGORY_COLORS[cat.category] || "#6C7A6D";
-    const percentage = totalAllocated > 0 ? ((cat.allocated / totalAllocated) * 100).toFixed(1) : "0.0";
+      const categoryDef = BUDGET_CATEGORIES.find((b) => b.id === cat.category);
+      const label = categoryDef?.label || cat.category;
+      const color = CATEGORY_COLORS[cat.category] || "#6C7A6D";
+      const percentage = totalAllocated > 0 ? ((cat.allocated / totalAllocated) * 100).toFixed(1) : "0.0";
 
-    return {
-      category: cat.category,
-      label,
-      color,
-      allocated: cat.allocated,
-      percentage,
-      pathData,
-    };
-  });
+      return {
+        category: cat.category,
+        label,
+        color,
+        allocated: cat.allocated,
+        percentage,
+        pathData,
+      };
+    });
+  }, [activeCategories, totalAllocated]);
 
   // Bar chart highest category for proportional sizing
-  const maxCategoryAllocated = Math.max(1, ...activeCategories.map((c) => c.allocated));
+  const maxCategoryAllocated = useMemo(
+    () => Math.max(1, ...activeCategories.map((c) => c.allocated)),
+    [activeCategories]
+  );
 
   // Timeline phase grouping
   const preEventMilestones = event.timeline.filter((m) => m.phase === "pre_event");

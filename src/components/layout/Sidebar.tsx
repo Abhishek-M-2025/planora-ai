@@ -10,8 +10,6 @@ import {
   PlusCircle,
   Sparkles,
   Key,
-  HelpCircle,
-  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

@@ -5,7 +5,7 @@ import { Modal } from "@/ui/Modal";
 import { Button } from "@/ui/Button";
 import { Input } from "@/ui/Input";
 import { Alert } from "@/ui/Alert";
-import { Check, Key, ExternalLink, ShieldCheck, Sparkles } from "lucide-react";
+import { ExternalLink, ShieldCheck } from "lucide-react";
 
 interface ApiKeyModalProps {
   isOpen: boolean;
@@ -15,14 +15,10 @@ interface ApiKeyModalProps {
 
 export function ApiKeyModal({ isOpen, onClose, onApiKeyUpdated }: ApiKeyModalProps) {
   const [apiKeyInput, setApiKeyInput] = useState("");
-  const [isChecking, setIsChecking] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "danger" | "info";
     text: string;
   } | null>(null);
-  const [serverConfigured, setServerConfigured] = useState<boolean | null>(null);
-
-  const [modelName, setModelName] = useState<string>("Gemini 3.8 Flash");
 
   useEffect(() => {
     if (isOpen) {
@@ -30,9 +26,7 @@ export function ApiKeyModal({ isOpen, onClose, onApiKeyUpdated }: ApiKeyModalPro
       fetch("/api/health")
         .then((res) => res.json())
         .then((data) => {
-          setServerConfigured(data.hasApiKey);
-          const activeModel = data.modelDisplayName || "Gemini 3.8 Flash";
-          setModelName(activeModel);
+          const activeModel = data.modelDisplayName || "Gemini 1.5 Flash";
           if (data.hasApiKey) {
             setStatusMessage({
               type: "success",
@@ -41,7 +35,7 @@ export function ApiKeyModal({ isOpen, onClose, onApiKeyUpdated }: ApiKeyModalPro
           }
         })
         .catch(() => {
-          setServerConfigured(false);
+          // Keep current status if check fails
         });
 
       // Load session key if any

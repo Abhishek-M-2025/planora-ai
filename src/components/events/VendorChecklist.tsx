@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { EventPlan, VendorChecklistItem, VendorStatus } from "@/lib/types";
 import { formatCurrency } from "@/lib/budget-calc";
 import { updateEvent } from "@/lib/storage";
-import { Card, CardHeader, CardTitle, CardContent } from "@/ui/Card";
+import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
 import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
 import { Modal } from "@/ui/Modal";
-import { Badge } from "@/ui/Badge";
 import {
   Briefcase,
   Plus,
@@ -17,10 +16,7 @@ import {
   Phone,
   Edit2,
   Trash2,
-  Check,
   Sparkles,
-  ArrowRight,
-  ExternalLink,
 } from "lucide-react";
 
 interface VendorChecklistProps {
@@ -44,13 +40,23 @@ export function VendorChecklist({ event, onEventUpdated }: VendorChecklistProps)
   const [formPhone, setFormPhone] = useState("");
   const [formNotes, setFormNotes] = useState("");
 
-  const categories = Array.from(new Set(event.vendors.map((v) => v.category)));
-
-  const filteredVendors = event.vendors.filter((v) =>
-    activeCategoryFilter === "all" ? true : v.category === activeCategoryFilter
+  const categories = useMemo(
+    () => Array.from(new Set(event.vendors.map((v) => v.category))),
+    [event.vendors]
   );
 
-  const contractedCount = event.vendors.filter((v) => v.status === "contract_signed").length;
+  const filteredVendors = useMemo(
+    () =>
+      event.vendors.filter((v) =>
+        activeCategoryFilter === "all" ? true : v.category === activeCategoryFilter
+      ),
+    [event.vendors, activeCategoryFilter]
+  );
+
+  const contractedCount = useMemo(
+    () => event.vendors.filter((v) => v.status === "contract_signed").length,
+    [event.vendors]
+  );
 
   const openAddModal = () => {
     setEditingVendor(null);
@@ -230,17 +236,6 @@ export function VendorChecklist({ event, onEventUpdated }: VendorChecklistProps)
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredVendors.map((vendor) => {
-            const isContracted = vendor.status === "contract_signed";
-
-            const statusColors: Record<VendorStatus, { badge: "sand" | "champagne" | "forest" | "success" | "danger" }> = {
-              not_contacted: { badge: "sand" },
-              inquired: { badge: "champagne" },
-              quote_received: { badge: "champagne" },
-              negotiating: { badge: "champagne" },
-              contract_signed: { badge: "success" },
-              declined: { badge: "danger" },
-            };
-
             return (
               <Card
                 key={vendor.id}

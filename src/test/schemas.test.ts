@@ -137,4 +137,55 @@ describe("Zod Validation Schemas", () => {
     const validation = GeminiPlanOutputSchema.safeParse(validAiOutput);
     expect(validation.success).toBe(true);
   });
+
+  it("validates individual budget items strictly", () => {
+    const validItem = {
+      id: "b_1",
+      category: "venue",
+      name: "Seaside Pavilion",
+      allocatedAmount: 12000,
+      actualAmount: 5000,
+      status: "deposit_paid",
+      notes: "Deposit submitted",
+    };
+
+    const res = BudgetItemSchema.safeParse(validItem);
+    expect(res.success).toBe(true);
+
+    const invalidItem = {
+      id: "b_2",
+      category: "invalid_category",
+      name: "Bad Item",
+      allocatedAmount: -100,
+    };
+    const invalidRes = BudgetItemSchema.safeParse(invalidItem);
+    expect(invalidRes.success).toBe(false);
+  });
+
+  it("validates timeline milestones with phases and statuses", () => {
+    const validMilestone = {
+      id: "tm_1",
+      title: "Floral Setup",
+      targetDate: "2027-06-15",
+      time: "10:00 AM",
+      phase: "day_of",
+      category: "Decor",
+      status: "in_progress",
+      assignedRole: "Florist",
+      description: "Centerpieces arranged",
+    };
+
+    const res = TimelineMilestoneSchema.safeParse(validMilestone);
+    expect(res.success).toBe(true);
+
+    const invalidMilestone = {
+      id: "tm_2",
+      title: "",
+      targetDate: "2027-06-15",
+      phase: "unknown_phase",
+      category: "Decor",
+    };
+    const invalidRes = TimelineMilestoneSchema.safeParse(invalidMilestone);
+    expect(invalidRes.success).toBe(false);
+  });
 });

@@ -1,12 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { EventPlan } from "@/lib/types";
 import { calculateBudgetSummary, formatCurrency, getBudgetWarnings } from "@/lib/budget-calc";
-import { Card, CardHeader, CardTitle, CardContent } from "@/ui/Card";
+import { Card, CardContent } from "@/ui/Card";
 import { ProgressBar } from "@/ui/ProgressBar";
-import { Badge } from "@/ui/Badge";
 import {
   Sparkles,
   Palette,
@@ -16,14 +15,10 @@ import {
   Lightbulb,
   CheckCircle,
   AlertTriangle,
-  Building,
   Users,
-  MapPin,
-  Calendar,
   Briefcase,
   ShieldAlert,
   FileText,
-  Tag,
 } from "lucide-react";
 import { EventAnalyticsCharts } from "./EventAnalyticsCharts";
 
@@ -32,20 +27,38 @@ interface PlanOverviewProps {
 }
 
 export function PlanOverview({ event }: PlanOverviewProps) {
-  const budgetSummary = calculateBudgetSummary(event.totalBudget, event.budgetItems);
-  const budgetWarnings = getBudgetWarnings(budgetSummary, event.budgetItems);
-  const completedMilestones = event.timeline.filter((t) => t.status === "completed").length;
-  const bookedVendors = event.vendors.filter((v) => v.status === "contract_signed").length;
+  const budgetSummary = useMemo(
+    () => calculateBudgetSummary(event.totalBudget, event.budgetItems),
+    [event.totalBudget, event.budgetItems]
+  );
+  const budgetWarnings = useMemo(
+    () => getBudgetWarnings(budgetSummary, event.budgetItems),
+    [budgetSummary, event.budgetItems]
+  );
+  const completedMilestones = useMemo(
+    () => event.timeline.filter((t) => t.status === "completed").length,
+    [event.timeline]
+  );
+  const bookedVendors = useMemo(
+    () => event.vendors.filter((v) => v.status === "contract_signed").length,
+    [event.vendors]
+  );
 
   // Filter recommendations by category
-  const riskRecommendations = event.recommendations.filter(
-    (r) => r.category === "risk_mitigation"
+  const riskRecommendations = useMemo(
+    () => event.recommendations.filter((r) => r.category === "risk_mitigation"),
+    [event.recommendations]
   );
-  const costRecommendations = event.recommendations.filter(
-    (r) => r.category === "cost_saving"
+  const costRecommendations = useMemo(
+    () => event.recommendations.filter((r) => r.category === "cost_saving"),
+    [event.recommendations]
   );
-  const guestRecommendations = event.recommendations.filter(
-    (r) => r.category === "guest_experience" || r.category === "timing"
+  const guestRecommendations = useMemo(
+    () =>
+      event.recommendations.filter(
+        (r) => r.category === "guest_experience" || r.category === "timing"
+      ),
+    [event.recommendations]
   );
 
   return (
@@ -600,36 +613,47 @@ export function PlanOverview({ event }: PlanOverviewProps) {
       </div>
 
       {/* 7. AI Strategic Recommendations Strip */}
-      {costRecommendations.length > 0 && (
+      {(costRecommendations.length > 0 || guestRecommendations.length > 0) && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-serif font-bold text-lg text-forest-950 flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-champagne-600" />
-              Cost Optimization & High-Impact Opportunities
+              Strategic Recommendations & Experience Design
             </h3>
             <span className="text-xs text-sand-500">Curated by Gemini</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {costRecommendations.map((rec) => (
-              <Card key={rec.id} className="p-5 flex flex-col justify-between space-y-3 bg-white border-sand-200">
-                <div className="space-y-2">
-                  <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-emerald-50 text-emerald-800 border-emerald-200">
-                    Cost Saving
-                  </span>
-                  <h4 className="font-semibold text-sm text-forest-950 leading-snug">
-                    {rec.title}
-                  </h4>
-                  <p className="text-xs text-sand-600 leading-relaxed">
-                    {rec.description}
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-sand-100 text-[11px] font-medium text-emerald-800 flex items-center gap-1">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>Benefit: {rec.potentialImpact}</span>
-                </div>
-              </Card>
-            ))}
+            {[...costRecommendations, ...guestRecommendations].map((rec) => {
+              const isCost = rec.category === "cost_saving";
+              const isTiming = rec.category === "timing";
+              const badgeLabel = isCost ? "Cost Saving" : isTiming ? "Timing Strategy" : "Guest Experience";
+              const badgeStyle = isCost
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : isTiming
+                ? "bg-amber-50 text-amber-800 border-amber-200"
+                : "bg-champagne-100 text-champagne-900 border-champagne-300";
+
+              return (
+                <Card key={rec.id} className="p-5 flex flex-col justify-between space-y-3 bg-white border-sand-200">
+                  <div className="space-y-2">
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${badgeStyle}`}>
+                      {badgeLabel}
+                    </span>
+                    <h4 className="font-semibold text-sm text-forest-950 leading-snug">
+                      {rec.title}
+                    </h4>
+                    <p className="text-xs text-sand-600 leading-relaxed">
+                      {rec.description}
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-sand-100 text-[11px] font-medium text-forest-900 flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Benefit: {rec.potentialImpact}</span>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}

@@ -173,7 +173,7 @@ export const AssistantChatRequestSchema = z.object({
     guestCount: z.number(),
     totalBudget: z.number(),
     currency: z.string(),
-    preferences: z.record(z.any()).optional(),
+    preferences: z.record(z.unknown()).optional(),
     totalAllocated: z.number().optional(),
     totalActual: z.number().optional(),
     budgetRemaining: z.number().optional(),

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { EventPlan, BudgetItem, BudgetCategory, BudgetItemStatus } from "@/lib/types";
 import {
   calculateBudgetSummary,
@@ -20,12 +20,9 @@ import { ProgressBar } from "@/ui/ProgressBar";
 import {
   Plus,
   DollarSign,
-  AlertTriangle,
   Edit2,
   Trash2,
-  CheckCircle2,
   PieChart,
-  ArrowUpRight,
 } from "lucide-react";
 
 interface BudgetTrackerProps {
@@ -34,8 +31,14 @@ interface BudgetTrackerProps {
 }
 
 export function BudgetTracker({ event, onEventUpdated }: BudgetTrackerProps) {
-  const summary = calculateBudgetSummary(event.totalBudget, event.budgetItems);
-  const warnings = getBudgetWarnings(summary, event.budgetItems);
+  const summary = useMemo(
+    () => calculateBudgetSummary(event.totalBudget, event.budgetItems),
+    [event.totalBudget, event.budgetItems]
+  );
+  const warnings = useMemo(
+    () => getBudgetWarnings(summary, event.budgetItems),
+    [summary, event.budgetItems]
+  );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<BudgetItem | null>(null);
@@ -140,8 +143,12 @@ export function BudgetTracker({ event, onEventUpdated }: BudgetTrackerProps) {
     { value: "cancelled", label: "Cancelled" },
   ];
 
-  const filteredItems = event.budgetItems.filter((item) =>
-    activeCategoryFilter === "all" ? true : item.category === activeCategoryFilter
+  const filteredItems = useMemo(
+    () =>
+      event.budgetItems.filter((item) =>
+        activeCategoryFilter === "all" ? true : item.category === activeCategoryFilter
+      ),
+    [event.budgetItems, activeCategoryFilter]
   );
 
   return (

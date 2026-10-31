@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { EventCreateInputSchema } from "@/lib/schemas";
-import { generateEventPlanWithGemini, getGeminiApiKey, GEMINI_MODEL_ID } from "@/lib/gemini";
+import { generateEventPlanWithGemini, getGeminiApiKey } from "@/lib/gemini";
 
 export async function POST(req: Request) {
   try {
@@ -40,14 +40,15 @@ export async function POST(req: Request) {
       success: true,
       data: planOutput,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API error generating plan:", error);
 
-    const errorMessage = error?.message || "An unexpected error occurred during AI plan generation.";
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred during AI plan generation.";
     const isApiKeyInvalid =
       errorMessage.toLowerCase().includes("api_key_invalid") ||
       errorMessage.toLowerCase().includes("api key not valid") ||
-      errorMessage.toLowerCase().includes("invalid api key");
+      errorMessage.toLowerCase().includes("invalid api key") ||
+      errorMessage.includes("404");
 
     return NextResponse.json(
       {

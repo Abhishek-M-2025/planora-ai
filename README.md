@@ -4,10 +4,11 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![Gemini API](https://img.shields.io/badge/Google_Gemini-1.5_Flash-8E75B2?logo=google)](https://ai.google.dev/)
-[![Tests](https://img.shields.io/badge/Vitest-16_Passing-brightgreen?logo=vitest)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Vitest-21_Passing-brightgreen?logo=vitest)](https://vitest.dev/)
+[![ESLint](https://img.shields.io/badge/ESLint-Clean-brightgreen?logo=eslint)](https://eslint.org/)
 [![WCAG](https://img.shields.io/badge/Accessibility-WCAG_2.2_AA-success)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 
-**Planora AI** is a premium, fully functional GenAI-powered event planning studio built for weddings, birthdays, milestone celebrations, and community events. Built with **Next.js App Router, TypeScript, Tailwind CSS, and shadcn/ui design patterns**, it integrates the **Google Gemini API** through secure server-side Route Handlers with strict Zod validation.
+**Planora AI** is a premium, fully functional GenAI-powered event planning studio built for weddings, birthdays, milestone celebrations, and community events. Built with **Next.js App Router, TypeScript, Tailwind CSS, and accessible UI component patterns**, it integrates the **Google Gemini API** through secure server-side Route Handlers with strict Zod validation.
 
 ---
 
@@ -26,8 +27,13 @@ Planora AI avoids generic AI templates and stark monochrome palettes in favor of
 ## Core Capabilities
 
 ### 1. Dynamic Plan Synthesis via Gemini API
+<<<<<<< HEAD
 - Users configure their event parameters: title, category (wedding, birthday, community, corporate, gala), target date, venue city, guest count, target budget, currency, styling preferences, and priority allocation bias.
 - Next.js server-side Route Handler (`/api/generate-plan`) calls **Gemini 3.8 Flash** with structured prompts, returning an executive brief, art-directed color palette, decor directives, budget breakdown, chronological timeline, and vendor recommendations.
+=======
+- Users configure their event parameters: title, category (wedding, birthday, community, corporate, anniversary, gala), target date, venue city, guest count, target budget, currency, styling preferences, and priority allocation bias.
+- Next.js server-side Route Handler (`/api/generate-plan`) calls **Google Gemini** with structured prompts, returning an executive brief, art-directed color palette, decor directives, budget breakdown, chronological timeline, vendor recommendations, and multi-dimensional strategic recommendations.
+>>>>>>> 92bf5cd (Update project files)
 - All AI responses are validated strictly using **Zod** (`GeminiPlanOutputSchema`).
 
 ### 2. Live Budget Calculations & Expense Tracking
@@ -37,20 +43,21 @@ Planora AI avoids generic AI templates and stark monochrome palettes in favor of
   - Dynamically detects over-budget conditions with warning heuristics.
   - Produces category-by-category breakdown with progress gauges.
   - Add, edit, and delete budget line items with real-time recalculation.
+  - Memoized with `useMemo` for high UI responsiveness.
 
 ### 3. Date-Based Timeline & Itinerary Manager
 - Organizes milestones chronologically across 3 phases:
   - **Pre-Event Planning**
   - **Day of Event Schedule (Run of Show)**
   - **Post-Event Wrap Up**
-- Live countdown indicator (`X days to go`).
+- Live countdown indicator (`X days to go` / `Today!` / `X days ago`).
 - Milestone status cycling (**Pending &rarr; In Progress &rarr; Completed**) with celebratory confetti feedback.
-- Add, edit, and remove milestones with lead assignee and specific instructions.
+- Add, edit, and remove milestones with lead assignee, time stamps, and specific instructions.
 
 ### 4. Curated Vendor Directory & Outreach Pipeline
 - Tracks supplier categories, estimated quotes vs. contracted amounts, and contact details.
 - Status progression pipeline: *Not Contacted &rarr; Inquired &rarr; Quote Received &rarr; Negotiating &rarr; Contract Signed &rarr; Declined*.
-- AI justification rationale explains why each supplier archetype was chosen.
+- AI justification rationale explains why each supplier archetype was chosen for the specific budget and location.
 
 ### 5. Interactive AI Plan Refiner
 - Per-event AI Assistant console (`/api/assistant-chat`).
@@ -91,9 +98,11 @@ Planora AI/
 │   │   ├── events/
 │   │   │   ├── ApiKeyModal.tsx          # Gemini API credentials & guide modal
 │   │   │   ├── BudgetTracker.tsx        # Interactive expense management table & cards
+│   │   │   ├── EventAnalyticsCharts.tsx # Visual SVG charts for budget & allocations
 │   │   │   ├── EventCard.tsx            # Celebration card with progress & swatches
 │   │   │   ├── EventForm.tsx            # Event parameter form & AI trigger
 │   │   │   ├── EventHeader.tsx          # Event navigation tabs, countdown, & badges
+│   │   │   ├── EventNotFound.tsx        # Reusable celebration not found card
 │   │   │   ├── PlanOverview.tsx         # AI summary, palette chips, decor directives
 │   │   │   ├── PlanRefinerChat.tsx      # Live Gemini chat console
 │   │   │   ├── TimelineManager.tsx      # Phase filters & milestone status toggles
@@ -103,7 +112,7 @@ Planora AI/
 │   │   │   ├── Logo.tsx                 # Custom art-directed SVG logo & icon
 │   │   │   ├── Navbar.tsx               # Top navigation bar with status pill
 │   │   │   └── Sidebar.tsx              # Sidebar navigation & engine status
-│   │   └── ui/                          # Accessible component primitives
+│   │   └── ui/                          # Accessible component primitives (WCAG 2.2 AA)
 │   │       ├── Alert.tsx
 │   │       ├── Badge.tsx
 │   │       ├── Button.tsx
@@ -113,24 +122,27 @@ Planora AI/
 │   │       ├── ProgressBar.tsx
 │   │       └── Select.tsx
 │   ├── lib/
-│   │   ├── budget-calc.ts               # Budget math, over-budget warnings, formatting
+│   │   ├── budget-calc.ts               # Pure budget math, over-budget warnings, formatting
 │   │   ├── gemini.ts                    # Google Generative AI integration service
 │   │   ├── schemas.ts                   # Zod validation schemas for all inputs & outputs
 │   │   ├── storage.ts                   # LocalStorage persistence & sample data seeder
 │   │   ├── timeline-utils.ts            # Phase ordering, countdowns, date formatting
-│   │   ├── types.ts                     # TypeScript data interfaces
+│   │   ├── types.ts                     # TypeScript data interfaces (zero unneeded any)
+│   │   ├── use-event-plan.ts            # Reusable reactive event-loading hook
 │   │   └── utils.ts                     # Class merging helper (cn)
 │   └── test/
 │       ├── budget-calc.test.ts          # Unit tests for budget math & warnings
 │       ├── components.test.tsx          # Component accessibility tests (WCAG 2.2)
 │       ├── schemas.test.ts              # Zod validation tests
 │       ├── setup.ts                     # Vitest test setup and DOM mocks
-│       └── storage.test.ts              # LocalStorage persistence unit tests
+│       ├── storage.test.ts              # LocalStorage persistence unit tests
+│       └── timeline-utils.test.ts       # Chronological timeline and countdown tests
+├── .eslintrc.json                       # Next.js ESLint configuration
 ├── .env.example                         # Template environment variables
 ├── .env.local                           # Local environment config (server-only)
 ├── next.config.mjs                      # Next.js configuration
 ├── package.json                         # Dependencies & scripts
-├── tailwind.config.ts                   # Custom color tokens & fonts
+├── tailwind.config.ts                   # Custom color tokens & typography
 ├── tsconfig.json                        # Strict TypeScript & path mappings
 └── vitest.config.ts                     # Vitest test runner configuration
 ```
@@ -140,11 +152,11 @@ Planora AI/
 ## Setup & Environment Configuration
 
 ### 1. Prerequisites
-- Node.js `v18.17+` or `v20+` (tested on Node v24.16)
+- Node.js `v18.17+`, `v20+`, or `v24+` (tested on Node v24.16)
 - npm or pnpm
 
 ### 2. Configure Gemini API Key
-Obtain a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+Obtain a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 Create or update `.env.local` in the project root:
 ```bash
@@ -152,7 +164,7 @@ GEMINI_API_KEY=AIzaSyYourGeminiApiKeyHere
 ```
 *Note: The key is accessed exclusively server-side in Next.js Route Handlers and is never exposed in browser bundles.*
 
-Alternatively, users can click **Configure API Key** in the top navigation bar to supply a session key directly within the app.
+Alternatively, users can click **Configure API Key** in the top navigation bar or sidebar to supply a session key directly within the app.
 
 ---
 
@@ -170,6 +182,11 @@ npm run build
 npm run start
 ```
 
+### Static Analysis & Linting
+```bash
+npm run lint
+```
+
 ---
 
 ## Running Tests
@@ -183,8 +200,9 @@ npm run test
 npm run test:watch
 ```
 
-**Test Coverage Highlights:**
+**Test Coverage Highlights (21 Passing Tests):**
 - **Budget Engine**: Calculations of total allocated, actual expenditures, variances, category aggregations, and over-budget alerts.
-- **Zod Schemas**: Strict validation of event inputs and structured Gemini output payloads.
+- **Zod Schemas**: Strict validation of event inputs, individual line items, timeline milestones, and structured Gemini output payloads.
+- **Timeline Utilities**: Milestone sequencing, phase ordering, and countdown days calculations.
 - **Client Storage Layer**: Tests persistence, retrieval, functional updaters, and deletions.
 - **Accessibility (WCAG 2.2 AA)**: Validates semantic button behaviors, ARIA progressbar states, alert roles, and focus traps/Escape key handling in modals.

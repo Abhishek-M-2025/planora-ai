@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { EventPlan, ChatMessage } from "@/lib/types";
 import { calculateBudgetSummary } from "@/lib/budget-calc";
 import { updateEvent } from "@/lib/storage";
-import { Card, CardHeader, CardTitle, CardContent } from "@/ui/Card";
+import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
 import { Alert } from "@/ui/Alert";
-import { Sparkles, Send, Bot, User, CornerDownLeft, Key } from "lucide-react";
+import { Sparkles, Send, Bot, User, Key } from "lucide-react";
 
 interface PlanRefinerChatProps {
   event: EventPlan;
@@ -25,7 +25,10 @@ export function PlanRefinerChat({
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const budgetSummary = calculateBudgetSummary(event.totalBudget, event.budgetItems);
+  const budgetSummary = useMemo(
+    () => calculateBudgetSummary(event.totalBudget, event.budgetItems),
+    [event.totalBudget, event.budgetItems]
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

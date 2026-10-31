@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { Button } from "@/ui/Button";
-import { PlusCircle, Sparkles, Key, Menu, X } from "lucide-react";
+import { PlusCircle, Key, Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 interface NavbarProps {

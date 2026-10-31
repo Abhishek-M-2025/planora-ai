@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { EventCreateInput, EventCreateInputSchema, EventTypeSchema } from "@/lib/schemas";
+import { EventCreateInput, EventCreateInputSchema, GeminiPlanOutput } from "@/lib/schemas";
 import { EventPlan, EventType, BudgetItem, TimelineMilestone, VendorChecklistItem } from "@/lib/types";
 import { saveEvent } from "@/lib/storage";
 import { Button } from "@/ui/Button";
@@ -10,7 +10,7 @@ import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/ui/Card";
 import { Alert } from "@/ui/Alert";
-import { Sparkles, Key, AlertCircle, ArrowRight, Calendar, Users, DollarSign, MapPin } from "lucide-react";
+import { Sparkles, Key, ArrowRight } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface EventFormProps {
@@ -81,7 +81,10 @@ export function EventForm({ onOpenApiKeyModal }: EventFormProps) {
     { value: "¥", label: "¥ (JPY)" },
   ];
 
-  const handleInputChange = (field: keyof EventCreateInput, value: any) => {
+  const handleInputChange = <K extends keyof EventCreateInput>(
+    field: K,
+    value: EventCreateInput[K]
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -96,7 +99,10 @@ export function EventForm({ onOpenApiKeyModal }: EventFormProps) {
     }
   };
 
-  const handlePreferenceChange = (field: string, value: any) => {
+  const handlePreferenceChange = (
+    field: keyof NonNullable<EventCreateInput["preferences"]>,
+    value: string
+  ) => {
     setFormData((prev) => ({
       ...prev,
       preferences: {
@@ -172,10 +178,10 @@ export function EventForm({ onOpenApiKeyModal }: EventFormProps) {
       }
 
       // Convert Gemini output to our persisted EventPlan
-      const generated = data.data;
+      const generated: GeminiPlanOutput = data.data;
       const eventId = `event_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-      const budgetItems: BudgetItem[] = generated.budgetBreakdown.map((item: any, idx: number) => ({
+      const budgetItems: BudgetItem[] = generated.budgetBreakdown.map((item, idx) => ({
         id: `bi_${Date.now()}_${idx}`,
         category: item.category,
         name: item.name,
@@ -185,7 +191,7 @@ export function EventForm({ onOpenApiKeyModal }: EventFormProps) {
         notes: item.notes || "",
       }));
 
-      const timeline: TimelineMilestone[] = generated.timeline.map((item: any, idx: number) => ({
+      const timeline: TimelineMilestone[] = generated.timeline.map((item, idx) => ({
         id: `tm_${Date.now()}_${idx}`,
         title: item.title,
         targetDate: item.targetDate || formData.date,
@@ -197,7 +203,7 @@ export function EventForm({ onOpenApiKeyModal }: EventFormProps) {
         description: item.description || "",
       }));
 
-      const vendors: VendorChecklistItem[] = generated.vendors.map((item: any, idx: number) => ({
+      const vendors: VendorChecklistItem[] = generated.vendors.map((item, idx) => ({
         id: `vnd_${Date.now()}_${idx}`,
         category: item.category,
         vendorName: item.vendorName,
@@ -222,7 +228,7 @@ export function EventForm({ onOpenApiKeyModal }: EventFormProps) {
         budgetItems,
         timeline,
         vendors,
-        recommendations: generated.recommendations.map((rec: any, idx: number) => ({
+        recommendations: generated.recommendations.map((rec, idx) => ({
           id: `rec_${Date.now()}_${idx}`,
           category: rec.category,
           title: rec.title,
@@ -388,7 +394,7 @@ export function EventForm({ onOpenApiKeyModal }: EventFormProps) {
           <CardHeader>
             <CardTitle>2. Aesthetic & Culinary Preferences</CardTitle>
             <CardDescription>
-              Guide Gemini's vision for themes, atmosphere, dietary requirements, and priority allocation.
+              Guide Gemini&apos;s vision for themes, atmosphere, dietary requirements, and priority allocation.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
